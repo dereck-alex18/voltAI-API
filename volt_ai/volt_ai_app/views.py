@@ -27,7 +27,41 @@ def login(request):
         return Response(serializer.data, status = status.HTTP_200_OK)
     else:
         return Response({"message": "The credentials are invalid or the user does not exist"}, status = status.HTTP_400_BAD_REQUEST)
-  
     
+    
+@api_view(['POST'])
+def register(request):
+    first_name = request.data.get("first_name")
+    last_name = request.data.get("last_name")
+    username = request.data.get("username")
+    raw_password = request.data.get("password")
+
+    
+    
+    if not first_name or not last_name or not username or not raw_password:
+        return Response({"message": "All the fields are required!"}, status = status.HTTP_400_BAD_REQUEST) 
+    try:
+        if User.objects.filter(username=username).exists():
+             return Response({"message": f"Username already exists!"}, status = status.HTTP_409_CONFLICT)
+        
+        user = User.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            username=username
+        )
+        user.set_password(raw_password)
+        user.save()
+        serializer = UserSerializer(user)
+
+        return Response(serializer.data, status = status.HTTP_200_OK)
+        
+    
+    except Exception as e:
+        return Response({"message": f"Something went wrong: {e}"}, status = status.HTTP_400_CONFLICT)
+    
+
+
+    
+
 
     
